@@ -5,6 +5,7 @@ from models.campaign import Campaign
 from services.analytics import campaign_report
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from routes.auth import auth_bp
+from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 
@@ -12,6 +13,7 @@ load_dotenv()  # Load environment variables from .env file
 
 
 app = Flask(__name__)
+CORS(app)
 # Database connection string
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
