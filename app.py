@@ -39,32 +39,34 @@ def create_campaign():
     if not result["valid"]:
         return jsonify({"errors": result["errors"]}), 400
     
-    existing_campaign = Campaign.query.get(data["id"])
-    if existing_campaign:     
-        return jsonify({"error": f"Campaign with ID '{data['id']}' already exists."}), 400
+    user_id = int(get_jwt_identity())
+    
     campaign = Campaign(
-        id=data["id"],
+        name=data["name"],
         budget=data["budget"],
         impressions=data["impressions"],
         clicks=data["clicks"],
         spend=data["spend"],
         leads=data["leads"],
         conversions=data["conversions"],
-        revenue=data["revenue"]
+        revenue=data["revenue"],
+        user_id=user_id
     )
 
     db.session.add(campaign)
     db.session.commit()
-    return jsonify({"message": f"Campaign '{campaign.id}' created successfully"}), 201
+    return jsonify({"message": f"Campaign '{data['name']}' created successfully"}), 201
 
 #READ ALL — GET /campaigns
 @app.route("/campaigns", methods=["GET"])
 @jwt_required()
 
 def get_all_campaigns():
-    campaigns = Campaign.query.all()
+    user_id = int(get_jwt_identity())
+    campaigns = Campaign.query.filter_by(user_id=user_id).all()
     if not campaigns:
-        return jsonify({"message": "No campaigns found."}), 200
+        return jsonify({"message": "No campaigns found"}), 404
+
     reports = jsonify([campaign_report(c) for c in campaigns])
     return reports, 200
 
@@ -72,7 +74,8 @@ def get_all_campaigns():
 @app.route("/campaigns/<string:campaign_id>", methods=["GET"])
 @jwt_required()
 def get_campaign(campaign_id):
-    campaign = Campaign.query.get(campaign_id)
+    user_id = int(get_jwt_identity())
+    campaign = Campaign.query.filter_by(id=campaign_id, user_id=user_id).first()
     if not campaign:
         return jsonify({"error": f"Campaign '{campaign_id}' not found"}), 404
     return jsonify(campaign_report(campaign)), 200
@@ -82,7 +85,8 @@ def get_campaign(campaign_id):
 @app.route("/campaigns/<string:campaign_id>", methods=["PUT"])
 @jwt_required()
 def update_campaign(campaign_id):
-    campaign = Campaign.query.get(campaign_id)
+    user_id = int(get_jwt_identity())
+    campaign = Campaign.query.filter_by(id=campaign_id, user_id=user_id).first()
     if not campaign:
         return jsonify({"error": f"Campaign '{campaign_id}' not found"}), 404
 
@@ -91,6 +95,8 @@ def update_campaign(campaign_id):
     if not result["valid"]:
         return jsonify({"errors": result["errors"]}), 400
     
+    
+    campaign.name        = data["name"]
     campaign.budget      = data["budget"]
     campaign.impressions = data["impressions"]
     campaign.clicks      = data["clicks"]
@@ -110,7 +116,8 @@ def update_campaign(campaign_id):
 @app.route("/campaigns/<string:campaign_id>", methods=["DELETE"])
 @jwt_required()
 def delete_campaign(campaign_id):
-    campaign = Campaign.query.get(campaign_id)
+    user_id = int(get_jwt_identity())
+    campaign = Campaign.query.filter_by(id=campaign_id, user_id=user_id).first()
     if not campaign:
         return jsonify({"error": f"Campaign '{campaign_id}' not found"}), 404
     
@@ -125,14 +132,18 @@ def delete_campaign(campaign_id):
 @app.route("/campaigns/<string:campaign_id>", methods=["PATCH"])
 @jwt_required()
 def patch_campaign(campaign_id):
-    campaign = Campaign.query.get(campaign_id)
+    user_id = int(get_jwt_identity())
+    campaign = Campaign.query.filter_by(id=campaign_id, user_id=user_id).first()
     if not campaign:
         return jsonify({"error": f"Campaign '{campaign_id}' not found"}), 404
 
     data = request.get_json()
-    campaign = Campaign.query.get(campaign_id)
+    user_id = int(get_jwt_identity())
+    campaign = Campaign.query.filter_by(id=campaign_id, user_id=user_id).first()
 
     # only update fields that were sent
+    if "name" in data:
+        campaign.name = data["name"]
     if "budget" in data:
         campaign.budget = data["budget"]
     if "impressions" in data:

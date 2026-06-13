@@ -37,6 +37,7 @@ def campaign_report(campaign):
         try:
             report = {
                 "id": campaign.id,
+                "Name": campaign.name,
                 "CTR": calculate_ctr(campaign),
                 "Budget Remaining": budget_remaining(campaign),
                 "Status": "On Track" if campaign.spend <= campaign.budget else "Over Budget",

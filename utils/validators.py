@@ -4,9 +4,9 @@
 def validate_campaign_data(data):
     errors = []
 
-    required_fields = ["id", "budget", "impressions", 
-                       "clicks", "spend", "leads", 
-                       "conversions", "revenue"]
+    required_fields = ["name", "budget", "impressions", 
+                   "clicks", "spend", "leads", 
+                   "conversions", "revenue"]
 
     # check all required fields exist
     for field in required_fields:
