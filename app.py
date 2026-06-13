@@ -28,7 +28,17 @@ app.register_blueprint(auth_bp)
 
 @app.route("/")
 def home():
-    return jsonify({"message": "Campaign API is running!"})
+    return """
+    <html>
+    <head><title>Campaign Analytics API</title></head>
+    <body>
+        <h1>Campaign Analytics API</h1>
+        <p>Built with Python, Flask, PostgreSQL, JWT Authentication</p>
+        <p>A REST API for managing digital marketing campaigns with real KPIs — CTR, CPL, ROAS</p>
+        <p><a href="https://github.com/farooq1190/campaign-api">View on GitHub</a></p>
+    </body>
+    </html>
+    """   
 
 
 @app.route("/campaigns", methods=["POST"])
