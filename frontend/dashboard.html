@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampaignIQ — Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">📊</span>
+            <span class="brand-name">CampaignIQ</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <span class="nav-icon">🏠</span> Dashboard
+            </a>
+            <a href="#" class="nav-item" onclick="showAddForm(); return false;">
+                <span class="nav-icon">➕</span> Add Campaign
+            </a>
+            <a href="#" class="nav-item" onclick="handleLogout(); return false;">
+                <span class="nav-icon">🚪</span> Logout
+            </a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="user-avatar">👤</div>
+            <div class="user-info">
+                <span class="user-name" id="username-display">User</span>
+                <span class="user-role">Marketing Manager</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div>
+                <h1 class="page-title">Campaign Dashboard</h1>
+                <p class="page-subtitle">Track and analyse your marketing performance</p>
+            </div>
+            <button class="btn-add" onclick="showAddForm()">+ New Campaign</button>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Campaigns</div>
+                <div class="kpi-value" id="kpi-total">—</div>
+                <div class="kpi-sub">Active campaigns</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Budget</div>
+                <div class="kpi-value" id="kpi-budget">—</div>
+                <div class="kpi-sub">Allocated spend</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value" id="kpi-revenue">—</div>
+                <div class="kpi-sub">Generated revenue</div>
+            </div>
+            <div class="kpi-card kpi-highlight">
+                <div class="kpi-label">Avg ROAS</div>
+                <div class="kpi-value" id="kpi-roas">—</div>
+                <div class="kpi-sub">Return on ad spend</div>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3 class="chart-title">CTR by Campaign</h3>
+                <canvas id="ctrChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3 class="chart-title">Budget vs Spend</h3>
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </div>
+
+        <!-- CAMPAIGNS TABLE -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3 class="chart-title">All Campaigns</h3>
+            </div>
+            <div id="loading-msg" class="loading-msg">Loading campaigns...</div>
+            <div id="empty-msg" class="empty-msg hidden">
+                No campaigns yet. Click "+ New Campaign" to add one!
+            </div>
+            <table class="campaign-table hidden" id="campaign-table">
+                <thead>
+                    <tr>
+                        <th>Campaign</th>
+                        <th>Budget</th>
+                        <th>Spend</th>
+                        <th>CTR</th>
+                        <th>CPL</th>
+                        <th>ROAS</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="campaign-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- ADD CAMPAIGN MODAL -->
+        <div class="modal-overlay hidden" id="modal-overlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>New Campaign</h3>
+                    <button class="modal-close" onclick="hideAddForm()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Campaign Name</label>
+                            <input type="text" id="c-name" placeholder="e.g. Summer Sale 2026">
+                        </div>
+                        <div class="form-group">
+                            <label>Budget (₹)</label>
+                            <input type="number" id="c-budget" placeholder="50000">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Impressions</label>
+                            <input type="number" id="c-impressions" placeholder="100000">
+                        </div>
+                        <div class="form-group">
+                            <label>Clicks</label>
+                            <input type="number" id="c-clicks" placeholder="2500">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Spend (₹)</label>
+                            <input type="number" id="c-spend" placeholder="35000">
+                        </div>
+                        <div class="form-group">
+                            <label>Leads</label>
+                            <input type="number" id="c-leads" placeholder="500">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Conversions</label>
+                            <input type="number" id="c-conversions" placeholder="200">
+                        </div>
+                        <div class="form-group">
+                            <label>Revenue (₹)</label>
+                            <input type="number" id="c-revenue" placeholder="35000">
+                        </div>
+                    </div>
+                    <div id="modal-error" class="error-msg hidden"></div>
+                    <button class="btn-primary" onclick="createCampaign()">Create Campaign</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ── CONFIG ───────────────────────────────────────────────────────
+        var API = "https://campaign-api-production-ade3.up.railway.app";
+        var campaigns = [];
+        var ctrChart = null;
+        var budgetChart = null;
+
+        // ── AUTH CHECK ───────────────────────────────────────────────────
+        var token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+        // ── MODAL ────────────────────────────────────────────────────────
+        function showAddForm() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        }
+
+        function hideAddForm() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('modal-error').classList.add('hidden');
+        }
+
+        // ── LOGOUT ───────────────────────────────────────────────────────
+        function handleLogout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // ── LOAD CAMPAIGNS ───────────────────────────────────────────────
+        async function loadCampaigns() {
+            try {
+                var res = await fetch(API + '/campaigns', {
+                    headers: getHeaders()
+                });
+
+                document.getElementById('loading-msg').classList.add('hidden');
+
+                if (res.status === 401) {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                var data = await res.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    document.getElementById('empty-msg').classList.remove('hidden');
+                    updateKPIs([]);
+                    return;
+                }
+
+                campaigns = data;
+                renderTable(campaigns);
+                updateKPIs(campaigns);
+                renderCharts(campaigns);
+
+            } catch (err) {
+                document.getElementById('loading-msg').textContent =
+                    'Error loading campaigns. Check your connection.';
+            }
+        }
+
+        // ── RENDER TABLE ─────────────────────────────────────────────────
+        function renderTable(data) {
+            var tbody = document.getElementById('campaign-tbody');
+            tbody.innerHTML = '';
+
+            data.forEach(function (c) {
+                var statusClass = c.status === 'On Track' ? 'badge-green' : 'badge-red';
+                var budget = (c.budget_remaining + c.spend) || 0;
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td><strong>' + c.name + '</strong></td>' +
+                    '<td>₹' + budget.toLocaleString() + '</td>' +
+                    '<td>₹' + (c.spend || 0).toLocaleString() + '</td>' +
+                    '<td>' + c.ctr + '%</td>' +
+                    '<td>₹' + c.cpl + '</td>' +
+                    '<td>' + c.roas + 'x</td>' +
+                    '<td><span class="badge ' + statusClass + '">' + c.status + '</span></td>' +
+                    '<td><button class="btn-delete" onclick="deleteCampaign(' + c.id + ')">Delete</button></td>';
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('campaign-table').classList.remove('hidden');
+        }
+
+        // ── UPDATE KPIs ──────────────────────────────────────────────────
+        function updateKPIs(data) {
+            if (data.length === 0) {
+                document.getElementById('kpi-total').textContent   = '0';
+                document.getElementById('kpi-budget').textContent  = '₹0';
+                document.getElementById('kpi-revenue').textContent = '₹0';
+                document.getElementById('kpi-roas').textContent    = '0x';
+                return;
+            }
+
+            var totalBudget  = data.reduce(function (s, c) { return s + (c.budget_remaining + c.spend); }, 0);
+            var totalRevenue = data.reduce(function (s, c) { return s + c.revenue; }, 0);
+            var avgRoas      = (data.reduce(function (s, c) { return s + c.roas; }, 0) / data.length).toFixed(2);
+
+            document.getElementById('kpi-total').textContent   = data.length;
+            document.getElementById('kpi-budget').textContent  = '₹' + totalBudget.toLocaleString();
+            document.getElementById('kpi-revenue').textContent = '₹' + totalRevenue.toLocaleString();
+            document.getElementById('kpi-roas').textContent    = avgRoas + 'x';
+        }
+
+        // ── RENDER CHARTS ────────────────────────────────────────────────
+        function renderCharts(data) {
+            var labels  = data.map(function (c) { return c.name; });
+            var ctrs    = data.map(function (c) { return c.ctr; });
+            var budgets = data.map(function (c) { return c.budget_remaining + c.spend; });
+            var spends  = data.map(function (c) { return c.spend || 0; });
+
+            if (ctrChart)    ctrChart.destroy();
+            if (budgetChart) budgetChart.destroy();
+
+            var opts = {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#E0DEF4', font: { family: 'Inter', size: 11 } }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#9896B8', maxRotation: 30 },
+                        grid:  { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    y: {
+                        ticks: { color: '#9896B8' },
+                        grid:  { color: 'rgba(255,255,255,0.05)' }
+                    }
+                }
+            };
+
+            ctrChart = new Chart(document.getElementById('ctrChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'CTR %',
+                        data: ctrs,
+                        backgroundColor: 'rgba(127,119,221,0.7)',
+                        borderColor: '#7F77DD',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: opts
+            });
+
+            budgetChart = new Chart(document.getElementById('budgetChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Budget',
+                            data: budgets,
+                            backgroundColor: 'rgba(55,138,221,0.7)',
+                            borderColor: '#378ADD',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Spend',
+                            data: spends,
+                            backgroundColor: 'rgba(29,158,117,0.7)',
+                            borderColor: '#1D9E75',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: opts
+            });
+        }
+
+        // ── CREATE CAMPAIGN ──────────────────────────────────────────────
+        async function createCampaign() {
+            var errorEl = document.getElementById('modal-error');
+            var name    = document.getElementById('c-name').value.trim();
+
+            if (!name) {
+                errorEl.textContent = 'Campaign name is required';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            var payload = {
+                name:        name,
+                budget:      parseInt(document.getElementById('c-budget').value)      || 0,
+                impressions: parseInt(document.getElementById('c-impressions').value) || 0,
+                clicks:      parseInt(document.getElementById('c-clicks').value)      || 0,
+                spend:       parseInt(document.getElementById('c-spend').value)       || 0,
+                leads:       parseInt(document.getElementById('c-leads').value)       || 0,
+                conversions: parseInt(document.getElementById('c-conversions').value) || 0,
+                revenue:     parseInt(document.getElementById('c-revenue').value)     || 0
+            };
+
+            try {
+                var res = await fetch(API + '/campaigns', {
+                    method:  'POST',
+                    headers: getHeaders(),
+                    body:    JSON.stringify(payload)
+                });
+
+                var data = await res.json();
+
+                if (res.ok) {
+                    hideAddForm();
+                    ['c-name','c-budget','c-impressions','c-clicks',
+                     'c-spend','c-leads','c-conversions','c-revenue'].forEach(function (id) {
+                        document.getElementById(id).value = '';
+                    });
+                    loadCampaigns();
+                } else {
+                    errorEl.textContent = data.error || JSON.stringify(data.errors || data);
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorEl.textContent = 'Cannot connect to server.';
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // ── DELETE CAMPAIGN ──────────────────────────────────────────────
+        async function deleteCampaign(id) {
+            if (!confirm('Delete this campaign?')) return;
+
+            try {
+                var res = await fetch(API + '/campaigns/' + id, {
+                    method:  'DELETE',
+                    headers: getHeaders()
+                });
+
+                if (res.ok) {
+                    loadCampaigns();
+                } else {
+                    alert('Failed to delete campaign');
+                }
+            } catch (err) {
+                alert('Cannot connect to server');
+            }
+        }
+
+        // ── INIT ─────────────────────────────────────────────────────────
+        window.onload = loadCampaigns;
+    </script>
+
+</body>
+</html>
