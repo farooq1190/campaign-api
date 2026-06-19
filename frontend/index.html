@@ -146,7 +146,7 @@
 
                 if (res.ok) {
                     localStorage.setItem('token', data.access_token);
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/dashboard';
                 } else {
                     showError(errorEl, data.error || 'Login failed');
                 }
@@ -198,7 +198,7 @@
         // ── PREVIEW CHART ────────────────────────────────────────────────
         window.onload = function() {
             if (localStorage.getItem('token')) {
-                window.location.href = 'dashboard.html';
+                window.location.href = '/dashboard';
             }
 
             const ctx = document.getElementById('previewChart').getContext('2d');
