@@ -377,8 +377,32 @@
             }
         }
 
+        //-User Fubcrion--
+        async function loadUser() {
+            try {
+                var res = await fetch(API + '/me', {
+                    headers: getHeaders()
+                });
+
+                if (res.status === 401) {
+                    localStorage.clear();
+                    window.location.href = '/login-page';
+                    return;
+                }
+
+                var data = await res.json();
+                document.getElementById('username-display').textContent = data.username || 'User';
+
+            } catch (err) {
+                console.error('Error loading user info:', err);
+            }
+        }
+
         // ── INIT ─────────────────────────────────────────────────────────
-        window.onload = loadCampaigns;
+        window.onload = function() {
+            loadCampaigns();
+            loadUser();
+        };
     </script>
 
 </body>

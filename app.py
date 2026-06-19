@@ -6,6 +6,7 @@ from services.analytics import campaign_report
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from routes.auth import auth_bp
 from flask_cors import CORS
+from models.user import User
 import os
 from dotenv import load_dotenv
 
@@ -46,7 +47,16 @@ def serve_css(filename):
 def home():
     return send_from_directory("frontend", "index.html")
 
-     
+@app.route("/me", methods=["GET"])
+@jwt_required()
+def get_current_user():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({"username": user.username, "email": user.email}), 200
+
+    
 
 @app.route("/campaigns", methods=["POST"])
 @jwt_required()
