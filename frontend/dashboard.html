@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CampaignIQ — Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/frontend/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -238,27 +238,27 @@
 
         // ── RENDER TABLE ─────────────────────────────────────────────────
         function renderTable(data) {
-            var tbody = document.getElementById('campaign-tbody');
-            tbody.innerHTML = '';
+    var tbody = document.getElementById('campaign-tbody');
+    tbody.innerHTML = '';
 
-            data.forEach(function (c) {
-                var statusClass = c.status === 'On Track' ? 'badge-green' : 'badge-red';
-                var budget = (c.budget_remaining + c.spend) || 0;
-                var tr = document.createElement('tr');
-                tr.innerHTML =
-                    '<td><strong>' + c.name + '</strong></td>' +
-                    '<td>₹' + budget.toLocaleString() + '</td>' +
-                    '<td>₹' + (c.spend || 0).toLocaleString() + '</td>' +
-                    '<td>' + c.ctr + '%</td>' +
-                    '<td>₹' + c.cpl + '</td>' +
-                    '<td>' + c.roas + 'x</td>' +
-                    '<td><span class="badge ' + statusClass + '">' + c.status + '</span></td>' +
-                    '<td><button class="btn-delete" onclick="deleteCampaign(' + c.id + ')">Delete</button></td>';
-                tbody.appendChild(tr);
-            });
+    data.forEach(function (c) {
+        var statusClass = c['Status'] === 'On Track' ? 'badge-green' : 'badge-red';
+        var budget = c['Budget Remaining'];
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td><strong>' + c['Name'] + '</strong></td>' +
+            '<td>₹' + budget.toLocaleString() + '</td>' +
+            '<td>₹' + (c['Revenue'] || 0).toLocaleString() + '</td>' +
+            '<td>' + c['CTR'] + '%</td>' +
+            '<td>₹' + c['CPL'] + '</td>' +
+            '<td>' + c['ROAS'] + 'x</td>' +
+            '<td><span class="badge ' + statusClass + '">' + c['Status'] + '</span></td>' +
+            '<td><button class="btn-delete" onclick="deleteCampaign(' + c.id + ')">Delete</button></td>';
+        tbody.appendChild(tr);
+    });
 
-            document.getElementById('campaign-table').classList.remove('hidden');
-        }
+    document.getElementById('campaign-table').classList.remove('hidden');
+}
 
         // ── UPDATE KPIs ──────────────────────────────────────────────────
         function updateKPIs(data) {
@@ -270,9 +270,9 @@
                 return;
             }
 
-            var totalBudget  = data.reduce(function (s, c) { return s + (c.budget_remaining + c.spend); }, 0);
-            var totalRevenue = data.reduce(function (s, c) { return s + c.revenue; }, 0);
-            var avgRoas      = (data.reduce(function (s, c) { return s + c.roas; }, 0) / data.length).toFixed(2);
+            var totalBudget = data.reduce(function (s, c) { return s + (c['Budget Remaining'] || 0); }, 0);
+            var totalRevenue = data.reduce(function (s, c) { return s + (c['Revenue'] || 0); }, 0);
+            var avgRoas      = (data.reduce(function (s, c) { return s + (c['ROAS'] || 0); }, 0) / data.length).toFixed(2);
 
             document.getElementById('kpi-total').textContent   = data.length;
             document.getElementById('kpi-budget').textContent  = '₹' + totalBudget.toLocaleString();
@@ -281,76 +281,28 @@
         }
 
         // ── RENDER CHARTS ────────────────────────────────────────────────
-        function renderCharts(data) {
-            var labels  = data.map(function (c) { return c.name; });
-            var ctrs    = data.map(function (c) { return c.ctr; });
-            var budgets = data.map(function (c) { return c.budget_remaining + c.spend; });
-            var spends  = data.map(function (c) { return c.spend || 0; });
+        function renderTable(data) {
+    var tbody = document.getElementById('campaign-tbody');
+    tbody.innerHTML = '';
 
-            if (ctrChart)    ctrChart.destroy();
-            if (budgetChart) budgetChart.destroy();
+    data.forEach(function (c) {
+        var statusClass = c['Status'] === 'On Track' ? 'badge-green' : 'badge-red';
+        var budget = c['Budget Remaining'];
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td><strong>' + c['Name'] + '</strong></td>' +
+            '<td>₹' + budget.toLocaleString() + '</td>' +
+            '<td>₹' + (c['Revenue'] || 0).toLocaleString() + '</td>' +
+            '<td>' + c['CTR'] + '%</td>' +
+            '<td>₹' + c['CPL'] + '</td>' +
+            '<td>' + c['ROAS'] + 'x</td>' +
+            '<td><span class="badge ' + statusClass + '">' + c['Status'] + '</span></td>' +
+            '<td><button class="btn-delete" onclick="deleteCampaign(' + c.id + ')">Delete</button></td>';
+        tbody.appendChild(tr);
+    });
 
-            var opts = {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: { color: '#E0DEF4', font: { family: 'Inter', size: 11 } }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#9896B8', maxRotation: 30 },
-                        grid:  { color: 'rgba(255,255,255,0.05)' }
-                    },
-                    y: {
-                        ticks: { color: '#9896B8' },
-                        grid:  { color: 'rgba(255,255,255,0.05)' }
-                    }
-                }
-            };
-
-            ctrChart = new Chart(document.getElementById('ctrChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'CTR %',
-                        data: ctrs,
-                        backgroundColor: 'rgba(127,119,221,0.7)',
-                        borderColor: '#7F77DD',
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: opts
-            });
-
-            budgetChart = new Chart(document.getElementById('budgetChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Budget',
-                            data: budgets,
-                            backgroundColor: 'rgba(55,138,221,0.7)',
-                            borderColor: '#378ADD',
-                            borderWidth: 2,
-                            borderRadius: 6
-                        },
-                        {
-                            label: 'Spend',
-                            data: spends,
-                            backgroundColor: 'rgba(29,158,117,0.7)',
-                            borderColor: '#1D9E75',
-                            borderWidth: 2,
-                            borderRadius: 6
-                        }
-                    ]
-                },
-                options: opts
-            });
-        }
+    document.getElementById('campaign-table').classList.remove('hidden');
+}
 
         // ── CREATE CAMPAIGN ──────────────────────────────────────────────
         async function createCampaign() {

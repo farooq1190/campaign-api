@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from extensions import db, bcrypt
 from utils.validators import validate_campaign_data
 from models.campaign import Campaign
@@ -27,21 +27,26 @@ jwt = JWTManager(app)
 
 app.register_blueprint(auth_bp)
 
+from flask import send_from_directory
+
+@app.route("/login-page")
+def serve_login():
+    return send_from_directory("frontend", "index.html")
+
+@app.route("/dashboard")
+def serve_dashboard():
+    return send_from_directory("frontend", "dashboard.html")
+
+@app.route("/frontend/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory("frontend/css", filename)
+
 
 @app.route("/")
 def home():
-    return """
-    <html>
-    <head><title>Campaign Analytics API</title></head>
-    <body>
-        <h1>Campaign Analytics API</h1>
-        <p>Built with Python, Flask, PostgreSQL, JWT Authentication</p>
-        <p>A REST API for managing digital marketing campaigns with real KPIs — CTR, CPL, ROAS</p>
-        <p><a href="https://github.com/farooq1190/campaign-api">View on GitHub</a></p>
-    </body>
-    </html>
-    """   
+    return send_from_directory("frontend", "index.html")
 
+     
 
 @app.route("/campaigns", methods=["POST"])
 @jwt_required()
